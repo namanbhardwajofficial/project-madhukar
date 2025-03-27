@@ -1,3 +1,4 @@
+// src/constants/translations.js (updated with redirecting message)
 export const translations = {
   en: {
     login: {
@@ -15,6 +16,7 @@ export const translations = {
       signUp: "Sign up",
       invalidCredentials: "Invalid email or password",
       errorOccurred: "An error occurred. Please try again later.",
+      redirecting: "Redirecting to dashboard...",
     },
     validation: {
       emailRequired: "Email is required",
@@ -44,6 +46,7 @@ export const translations = {
       signUp: "Registrarse",
       invalidCredentials: "Correo electrónico o contraseña inválidos",
       errorOccurred: "Ha ocurrido un error. Por favor intente más tarde.",
+      redirecting: "Redirigiendo al panel...",
     },
     validation: {
       emailRequired: "El correo electrónico es obligatorio",
@@ -73,6 +76,7 @@ export const translations = {
       signUp: "S'inscrire",
       invalidCredentials: "E-mail ou mot de passe invalide",
       errorOccurred: "Une erreur s'est produite. Veuillez réessayer plus tard.",
+      redirecting: "Redirection vers le tableau de bord...",
     },
     validation: {
       emailRequired: "L'e-mail est requis",

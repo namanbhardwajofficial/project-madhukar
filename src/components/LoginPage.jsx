@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { translations } from "../constants/translations";
@@ -7,13 +7,22 @@ import useAuth from "../hooks/useAuth";
 const LoginPage = ({ locale = "en", onForgotPassword, onSignup }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState("");
-  const { login } = useAuth();
+  const [loginSuccess, setLoginSuccess] = useState(false);
+  const { login, isAuthenticated } = useAuth();
   const t = translations[locale];
+
+  // Effect to monitor authentication state changes
+  useEffect(() => {
+    if (isAuthenticated) {
+      setLoginSuccess(true);
+    }
+  }, [isAuthenticated]);
 
   const handleLogin = async (values) => {
     try {
       setIsLoading(true);
       setLoginError("");
+      setLoginSuccess(false);
 
       // Call the authentication service
       const result = await login(
@@ -24,6 +33,8 @@ const LoginPage = ({ locale = "en", onForgotPassword, onSignup }) => {
 
       if (!result.success) {
         setLoginError(result.message || t.login.invalidCredentials);
+      } else {
+        setLoginSuccess(true); // Set success state immediately
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -53,6 +64,44 @@ const LoginPage = ({ locale = "en", onForgotPassword, onSignup }) => {
     validationSchema,
     onSubmit: handleLogin,
   });
+
+  // If already logged in or just logged in successfully, show a success message
+  if (loginSuccess || isAuthenticated) {
+    return (
+      <div className="flex min-h-screen bg-gray-50 items-center justify-center">
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
+          <div className="text-center">
+            <svg
+              className="mx-auto h-12 w-12 text-green-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+            <h2 className="mt-2 text-2xl font-bold text-gray-900">
+              {t.dashboard.successfulLogin}
+            </h2>
+            <p className="mt-2 text-gray-600">{t.dashboard.welcome}</p>
+            <div className="mt-6">
+              <p className="text-sm text-gray-500">
+                {t.login.redirecting || "Redirecting to dashboard..."}
+              </p>
+              <div className="mt-3 w-full h-1 bg-gray-200 rounded-full overflow-hidden">
+                <div className="h-full bg-indigo-600 animate-pulse rounded-full"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">

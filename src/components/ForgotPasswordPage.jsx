@@ -55,7 +55,7 @@ Object.keys(forgotPasswordTranslations).forEach((locale) => {
 
 const ForgotPasswordPage = ({ locale = "en", onBackToLogin }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [status, setStatus] = useState(null); // null, 'success', 'error'
+  const [status, setStatus] = useState(""); // null, 'success', 'error'
   const t = translations[locale];
 
   // Define validation schema using Yup
@@ -74,7 +74,7 @@ const ForgotPasswordPage = ({ locale = "en", onBackToLogin }) => {
     onSubmit: async (values) => {
       try {
         setIsLoading(true);
-        setStatus(null);
+        setStatus("");
 
         // Simulate API call
         await new Promise((resolve) => setTimeout(resolve, 1500));

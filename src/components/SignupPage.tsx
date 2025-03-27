@@ -3,7 +3,75 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { translations } from "../constants/translations";
 
-// SignupPage component
+// First, let's add translations for signup if not already added
+const signupTranslations = {
+  en: {
+    title: "Create your account",
+    subtitle: "Sign up to start using our platform",
+    nameLabel: "Full name",
+    namePlaceholder: "John Doe",
+    emailLabel: "Email address",
+    emailPlaceholder: "your.email@example.com",
+    passwordLabel: "Password",
+    passwordPlaceholder: "••••••••",
+    confirmPasswordLabel: "Confirm password",
+    confirmPasswordPlaceholder: "••••••••",
+    termsLabel: "I agree to the terms and conditions",
+    signupButton: "Create account",
+    creatingAccount: "Creating account...",
+    haveAccount: "Already have an account?",
+    signIn: "Sign in",
+    successMessage: "Account created successfully! You can now sign in.",
+    errorMessage: "An error occurred. Please try again later.",
+  },
+  es: {
+    title: "Cree su cuenta",
+    subtitle: "Regístrese para comenzar a usar nuestra plataforma",
+    nameLabel: "Nombre completo",
+    namePlaceholder: "Juan Pérez",
+    emailLabel: "Correo electrónico",
+    emailPlaceholder: "su.correo@ejemplo.com",
+    passwordLabel: "Contraseña",
+    passwordPlaceholder: "••••••••",
+    confirmPasswordLabel: "Confirmar contraseña",
+    confirmPasswordPlaceholder: "••••••••",
+    termsLabel: "Acepto los términos y condiciones",
+    signupButton: "Crear cuenta",
+    creatingAccount: "Creando cuenta...",
+    haveAccount: "¿Ya tiene una cuenta?",
+    signIn: "Iniciar sesión",
+    successMessage: "¡Cuenta creada con éxito! Ahora puede iniciar sesión.",
+    errorMessage: "Ha ocurrido un error. Por favor intente más tarde.",
+  },
+  fr: {
+    title: "Créez votre compte",
+    subtitle: "Inscrivez-vous pour commencer à utiliser notre plateforme",
+    nameLabel: "Nom complet",
+    namePlaceholder: "Jean Dupont",
+    emailLabel: "Adresse e-mail",
+    emailPlaceholder: "votre.email@exemple.com",
+    passwordLabel: "Mot de passe",
+    passwordPlaceholder: "••••••••",
+    confirmPasswordLabel: "Confirmer le mot de passe",
+    confirmPasswordPlaceholder: "••••••••",
+    termsLabel: "J'accepte les termes et conditions",
+    signupButton: "Créer un compte",
+    creatingAccount: "Création du compte...",
+    haveAccount: "Vous avez déjà un compte?",
+    signIn: "Se connecter",
+    successMessage:
+      "Compte créé avec succès! Vous pouvez maintenant vous connecter.",
+    errorMessage: "Une erreur s'est produite. Veuillez réessayer plus tard.",
+  },
+};
+
+// Add these translations to the main translations object
+Object.keys(signupTranslations).forEach((locale) => {
+  if (!translations[locale].signup) {
+    translations[locale].signup = signupTranslations[locale];
+  }
+});
+
 const SignupPage = ({ locale = "en", onBackToLogin }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState(""); // null, 'success', 'error'
@@ -19,14 +87,11 @@ const SignupPage = ({ locale = "en", onBackToLogin }) => {
       .min(8, t.validation.passwordLength)
       .required(t.validation.passwordRequired),
     confirmPassword: Yup.string()
-      .test("passwords-match", "Passwords must match", function (value) {
-        return value === this.parent.password;
-      })
+      .oneOf([Yup.ref("password") as any, null], "Passwords must match")
       .required("Confirm password is required"),
-    acceptTerms: Yup.boolean().test(
-      "is-true",
-      "You must accept the terms and conditions",
-      (value) => value === true
+    acceptTerms: Yup.boolean().oneOf(
+      [true],
+      "You must accept the terms and conditions"
     ),
   });
 

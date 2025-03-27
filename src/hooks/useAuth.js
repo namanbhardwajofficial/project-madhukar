@@ -10,12 +10,13 @@ const useAuth = () => {
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Demo authentication logic
-      if (email === "test@example.com" && password === "password123") {
+      if (email === "naman@naman.com" && password === "naman123") {
         const userData = {
           id: "1",
           email,
-          name: "Test User",
+          name: "Naman",
         };
+        // @ts-ignore
 
         setUser(userData);
         setIsAuthenticated(true);

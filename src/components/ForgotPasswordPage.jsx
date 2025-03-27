@@ -2,56 +2,92 @@ import React, { useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { translations } from "../constants/translations";
-import useAuth from "../hooks/useAuth";
 
-const LoginPage = ({ locale = "en", onForgotPassword, onSignup }) => {
+// First, let's add translations for forgot password if not already added
+const forgotPasswordTranslations = {
+  en: {
+    title: "Reset your password",
+    subtitle:
+      "Enter your email address and we'll send you a link to reset your password",
+    emailLabel: "Email address",
+    emailPlaceholder: "your.email@example.com",
+    resetButton: "Send reset link",
+    backToLogin: "Back to login",
+    processingRequest: "Processing...",
+    successMessage:
+      "If your email exists in our system, you will receive a password reset link shortly.",
+    errorMessage: "An error occurred. Please try again later.",
+  },
+  es: {
+    title: "Restablecer su contraseña",
+    subtitle:
+      "Ingrese su correo electrónico y le enviaremos un enlace para restablecer su contraseña",
+    emailLabel: "Correo electrónico",
+    emailPlaceholder: "su.correo@ejemplo.com",
+    resetButton: "Enviar enlace de restablecimiento",
+    backToLogin: "Volver al inicio de sesión",
+    processingRequest: "Procesando...",
+    successMessage:
+      "Si su correo electrónico existe en nuestro sistema, recibirá un enlace para restablecer su contraseña en breve.",
+    errorMessage: "Ha ocurrido un error. Por favor intente más tarde.",
+  },
+  fr: {
+    title: "Réinitialiser votre mot de passe",
+    subtitle:
+      "Entrez votre adresse e-mail et nous vous enverrons un lien pour réinitialiser votre mot de passe",
+    emailLabel: "Adresse e-mail",
+    emailPlaceholder: "votre.email@exemple.com",
+    resetButton: "Envoyer le lien de réinitialisation",
+    backToLogin: "Retour à la connexion",
+    processingRequest: "Traitement...",
+    successMessage:
+      "Si votre e-mail existe dans notre système, vous recevrez un lien de réinitialisation de mot de passe sous peu.",
+    errorMessage: "Une erreur s'est produite. Veuillez réessayer plus tard.",
+  },
+};
+
+// Add these translations to the main translations object
+Object.keys(forgotPasswordTranslations).forEach((locale) => {
+  if (!translations[locale].forgotPassword) {
+    translations[locale].forgotPassword = forgotPasswordTranslations[locale];
+  }
+});
+
+const ForgotPasswordPage = ({ locale = "en", onBackToLogin }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [loginError, setLoginError] = useState("");
-  const { login } = useAuth();
+  const [status, setStatus] = useState(null); // null, 'success', 'error'
   const t = translations[locale];
-
-  const handleLogin = async (values) => {
-    try {
-      setIsLoading(true);
-      setLoginError("");
-
-      // Call the authentication service
-      const result = await login(
-        values.email,
-        values.password,
-        values.rememberMe
-      );
-
-      if (!result.success) {
-        setLoginError(result.message || t.login.invalidCredentials);
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      setLoginError(t.login.errorOccurred);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   // Define validation schema using Yup
   const validationSchema = Yup.object({
     email: Yup.string()
       .email(t.validation.invalidEmail)
       .required(t.validation.emailRequired),
-    password: Yup.string()
-      .min(8, t.validation.passwordLength)
-      .required(t.validation.passwordRequired),
   });
 
   // Initialize Formik
   const formik = useFormik({
     initialValues: {
       email: "",
-      password: "",
-      rememberMe: false,
     },
     validationSchema,
-    onSubmit: handleLogin,
+    onSubmit: async (values) => {
+      try {
+        setIsLoading(true);
+        setStatus(null);
+
+        // Simulate API call
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+
+        // For demo purposes, always show success
+        setStatus("success");
+      } catch (error) {
+        console.error("Password reset error:", error);
+        setStatus("error");
+      } finally {
+        setIsLoading(false);
+      }
+    },
   });
 
   return (
@@ -74,8 +110,7 @@ const LoginPage = ({ locale = "en", onForgotPassword, onSignup }) => {
           </svg>
           <h1 className="text-4xl font-bold mb-4">Acme Dashboard</h1>
           <p className="text-xl text-center max-w-md">
-            Access your analytics, track performance, and manage your business
-            all in one place.
+            Reset your password to regain access to your account.
           </p>
         </div>
       </div>
@@ -102,33 +137,41 @@ const LoginPage = ({ locale = "en", onForgotPassword, onSignup }) => {
           <div className="bg-white rounded-lg shadow-lg p-8">
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold text-gray-800">
-                {t.login.title}
+                {t.forgotPassword.title}
               </h1>
-              <p className="text-gray-600 mt-2">{t.login.subtitle}</p>
+              <p className="text-gray-600 mt-2">{t.forgotPassword.subtitle}</p>
             </div>
 
-            {loginError && (
+            {status === "success" && (
               <div
-                className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"
+                className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4"
                 role="alert"
-                data-testid="login-error"
               >
-                <span className="block sm:inline">{loginError}</span>
+                <span className="block sm:inline">
+                  {t.forgotPassword.successMessage}
+                </span>
               </div>
             )}
 
-            <form
-              onSubmit={formik.handleSubmit}
-              className="space-y-6"
-              data-testid="login-form"
-            >
+            {status === "error" && (
+              <div
+                className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"
+                role="alert"
+              >
+                <span className="block sm:inline">
+                  {t.forgotPassword.errorMessage}
+                </span>
+              </div>
+            )}
+
+            <form onSubmit={formik.handleSubmit} className="space-y-6">
               {/* Email Field */}
               <div>
                 <label
                   htmlFor="email"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  {t.login.emailLabel}
+                  {t.forgotPassword.emailLabel}
                 </label>
                 <div className="mt-1">
                   <input
@@ -136,7 +179,6 @@ const LoginPage = ({ locale = "en", onForgotPassword, onSignup }) => {
                     name="email"
                     type="email"
                     autoComplete="email"
-                    data-testid="email-input"
                     value={formik.values.email}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
@@ -145,89 +187,22 @@ const LoginPage = ({ locale = "en", onForgotPassword, onSignup }) => {
                         ? "border-red-300"
                         : "border-gray-300"
                     } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                    placeholder={t.login.emailPlaceholder}
+                    placeholder={t.forgotPassword.emailPlaceholder}
+                    disabled={status === "success"}
                   />
                   {formik.touched.email && formik.errors.email && (
-                    <p
-                      className="mt-1 text-sm text-red-600"
-                      data-testid="email-error"
-                    >
+                    <p className="mt-1 text-sm text-red-600">
                       {formik.errors.email}
                     </p>
                   )}
                 </div>
               </div>
 
-              {/* Password Field */}
-              <div>
-                <div className="flex justify-between">
-                  <label
-                    htmlFor="password"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t.login.passwordLabel}
-                  </label>
-                  <button
-                    type="button"
-                    onClick={onForgotPassword}
-                    className="text-sm text-indigo-600 hover:text-indigo-500"
-                  >
-                    {t.login.forgotPassword}
-                  </button>
-                </div>
-                <div className="mt-1">
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    autoComplete="current-password"
-                    data-testid="password-input"
-                    value={formik.values.password}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className={`appearance-none block w-full px-3 py-2 border ${
-                      formik.touched.password && formik.errors.password
-                        ? "border-red-300"
-                        : "border-gray-300"
-                    } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                    placeholder={t.login.passwordPlaceholder}
-                  />
-                  {formik.touched.password && formik.errors.password && (
-                    <p
-                      className="mt-1 text-sm text-red-600"
-                      data-testid="password-error"
-                    >
-                      {formik.errors.password}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Remember Me Checkbox */}
-              <div className="flex items-center">
-                <input
-                  id="rememberMe"
-                  name="rememberMe"
-                  type="checkbox"
-                  data-testid="remember-checkbox"
-                  checked={formik.values.rememberMe}
-                  onChange={formik.handleChange}
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                />
-                <label
-                  htmlFor="rememberMe"
-                  className="ml-2 block text-sm text-gray-700"
-                >
-                  {t.login.rememberMe}
-                </label>
-              </div>
-
               {/* Submit Button */}
               <div>
                 <button
                   type="submit"
-                  disabled={isLoading}
-                  data-testid="login-button"
+                  disabled={isLoading || status === "success"}
                   className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
                 >
                   {isLoading ? (
@@ -252,25 +227,34 @@ const LoginPage = ({ locale = "en", onForgotPassword, onSignup }) => {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
-                      {t.login.loggingIn}
+                      {t.forgotPassword.processingRequest}
                     </span>
                   ) : (
-                    t.login.signIn
+                    t.forgotPassword.resetButton
                   )}
                 </button>
               </div>
             </form>
 
             <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
-                {t.login.noAccount}{" "}
-                <button
-                  onClick={onSignup}
-                  className="font-medium text-indigo-600 hover:text-indigo-500"
+              <button
+                onClick={onBackToLogin}
+                className="inline-flex items-center text-sm text-indigo-600 hover:text-indigo-500"
+              >
+                <svg
+                  className="mr-2 h-4 w-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
                 >
-                  {t.login.signUp}
-                </button>
-              </p>
+                  <path
+                    fillRule="evenodd"
+                    d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                {t.forgotPassword.backToLogin}
+              </button>
             </div>
           </div>
         </div>
@@ -279,4 +263,4 @@ const LoginPage = ({ locale = "en", onForgotPassword, onSignup }) => {
   );
 };
 
-export default LoginPage;
+export default ForgotPasswordPage;
